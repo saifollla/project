@@ -153,4 +153,10 @@ describe('time helpers', () => {
     expect(minToHHMM(660)).toBe('11:00');
     expect(minToHHMM(1439)).toBe('23:59');
   });
+
+  it('clamps out-of-range minutes to a valid HH:MM', () => {
+    expect(minToHHMM(-30)).toBe('00:00');
+    expect(minToHHMM(1450)).toBe('23:59');
+    expect(minToHHMM(Number.NaN)).toBe('--:--');
+  });
 });

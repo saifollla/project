@@ -2,11 +2,12 @@ import { useState, type ChangeEvent, type FormEvent } from 'react';
 import { CheckCircle2, Clock, Search, XCircle } from 'lucide-react';
 import { checkAvailability, hhmmToMin, minToHHMM } from '@/availabilityLogic';
 import BookingsPanel from '@/components/BookingsPanel';
+import TimeField from '@/components/TimeField';
 import { bookings, rooms } from '@/sampleData';
 import type { CheckResult } from '@/types';
 
-const inputClass =
-  'mt-2 w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-slate-900 shadow-sm transition-colors duration-200 placeholder:text-slate-400 hover:border-slate-400 focus:border-teal-600 focus:outline-none focus:ring-4 focus:ring-teal-600/15';
+const selectClass =
+  'mt-2 w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-slate-900 shadow-sm transition-colors duration-200 hover:border-slate-400 focus:border-teal-600 focus:outline-none focus:ring-4 focus:ring-teal-600/15';
 
 const labelClass = 'block text-sm font-medium text-slate-700';
 
@@ -20,12 +21,14 @@ export default function RoomChecker() {
   const selectedRoom = rooms.find((room) => room.id === roomId);
   const roomBookings = bookings.filter((booking) => booking.roomId === roomId);
 
-  const edit =
-    (setter: (value: string) => void) =>
-    (event: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-      setter(event.target.value);
-      setResult(null);
-    };
+  const setField = (setter: (value: string) => void) => (value: string) => {
+    setter(value);
+    setResult(null);
+  };
+
+  const edit = (setter: (value: string) => void) => (event: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    setField(setter)(event.target.value);
+  };
 
   const handleCheck = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -53,7 +56,7 @@ export default function RoomChecker() {
             <label htmlFor="room" className={labelClass}>
               Room
             </label>
-            <select id="room" value={roomId} onChange={edit(setRoomId)} className={inputClass}>
+            <select id="room" value={roomId} onChange={edit(setRoomId)} className={selectClass}>
               {rooms.map((room) => (
                 <option key={room.id} value={room.id}>
                   {room.name}
@@ -66,18 +69,8 @@ export default function RoomChecker() {
           </div>
 
           <div className="grid gap-4 sm:grid-cols-2">
-            <div>
-              <label htmlFor="start" className={labelClass}>
-                Start time
-              </label>
-              <input id="start" type="time" value={start} onChange={edit(setStart)} className={inputClass} />
-            </div>
-            <div>
-              <label htmlFor="end" className={labelClass}>
-                End time
-              </label>
-              <input id="end" type="time" value={end} onChange={edit(setEnd)} className={inputClass} />
-            </div>
+            <TimeField id="start" label="Start time" value={start} onChange={setField(setStart)} />
+            <TimeField id="end" label="End time" value={end} onChange={setField(setEnd)} />
           </div>
 
           <div>

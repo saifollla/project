@@ -13,8 +13,10 @@ export function hhmmToMin(hhmm: string): number {
 }
 
 export function minToHHMM(total: number): string {
-  const hours = Math.floor(total / 60);
-  const minutes = total % 60;
+  if (!Number.isFinite(total)) return '--:--';
+  const clamped = Math.max(0, Math.min(total, MINUTES_PER_DAY - 1));
+  const hours = Math.floor(clamped / 60);
+  const minutes = Math.round(clamped % 60);
   return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
 }
 
