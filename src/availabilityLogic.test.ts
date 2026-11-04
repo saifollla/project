@@ -160,3 +160,45 @@ describe('time helpers', () => {
     expect(minToHHMM(Number.NaN)).toBe('--:--');
   });
 });
+
+describe('regression: AC-mapped acceptance cases', () => {
+  const base = { now: 540, blocked: false, bookings: [{ start: 600, end: 660 }] };
+
+  it('R1 rejects a start earlier than the current time (AC1)', () => {
+    expect(canBook({ start: 530, end: 580, ...base })).toBe(false);
+  });
+
+  it('R2 rejects a reversed interval where start >= end (AC1)', () => {
+    expect(canBook({ start: 670, end: 660, ...base })).toBe(false);
+  });
+
+  it('R3 rejects a 121-minute duration (AC2)', () => {
+    expect(canBook({ start: 700, end: 821, ...base })).toBe(false);
+  });
+
+  it('R4 rejects a blocked room regardless of a valid slot (AC3)', () => {
+    expect(canBook({ start: 700, end: 760, ...base, blocked: true })).toBe(false);
+  });
+
+  it('R5 rejects a slot overlapping an existing booking (AC4)', () => {
+    expect(canBook({ start: 610, end: 650, ...base })).toBe(false);
+  });
+
+  it('R6 accepts a slot touching the existing booking end at minute 660 (AC4)', () => {
+    expect(canBook({ start: 660, end: 720, ...base })).toBe(true);
+  });
+
+  it('R7 accepts a slot touching the existing booking start at minute 600 (AC4)', () => {
+    expect(canBook({ start: 550, end: 600, ...base })).toBe(true);
+  });
+
+  it('R8 leaves the bookings array unchanged after a check (AC5)', () => {
+    const bookings: Booking[] = [
+      { id: 'x', roomId: 'r', start: 600, end: 660, title: 'Seminar' },
+    ];
+    const snapshot = structuredClone(bookings);
+    canBook({ start: 610, end: 650, now: 540, blocked: false, bookings });
+    expect(bookings).toEqual(snapshot);
+    expect(bookings).toHaveLength(1);
+  });
+});
